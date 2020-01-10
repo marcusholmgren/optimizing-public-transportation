@@ -5,8 +5,9 @@ import time
 from avro.schema import PrimitiveSchema, UnionSchema, FixedSchema, EnumSchema, RecordSchema, ArraySchema, MapSchema, \
     ErrorUnionSchema
 from confluent_kafka import avro
-from confluent_kafka.admin import AdminClient, NewTopic
+from confluent_kafka.admin import AdminClient  #, NewTopic
 from confluent_kafka.avro import AvroProducer
+from confluent_kafka.cimpl import NewTopic
 from fastavro.io.symbols import Union
 
 logger = logging.getLogger(__name__)
@@ -51,7 +52,7 @@ class Producer:
         #
         self.broker_properties = {
             "bootstrap.servers": BROKER_URL,
-            # TODO
+            "request.required.acks": self.num_replicas  # TODO
             # TODO
         }
 
@@ -70,8 +71,10 @@ class Producer:
         self.producer = AvroProducer(
             {
                 "bootstrap.servers": BROKER_URL,
-                "schema.registry.url": "http://localhost:8086",
-            }
+                "schema.registry.url": "http://localhost:8086"
+            },
+            default_key_schema=self.key_schema,
+            default_value_schema=self.value_schema
         )
 
     def create_topic(self):
