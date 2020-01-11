@@ -1,0 +1,9 @@
+{
+  "type": "record",
+  "name": "WeatherValue",
+  "namespace": "mh.data.streaming.nd",
+  "fields": [
+    {"name": "temperature", "type": "double"},
+    {"name": "status", "type": "string"}
+  ]
+}
