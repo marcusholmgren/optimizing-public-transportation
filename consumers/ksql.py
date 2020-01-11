@@ -36,7 +36,7 @@ CREATE TABLE turnstile_summary
     station_id int,
     station_count varchar
 WITH (
-    KAFKA_TOPIC='turnstile_summary',
+    KAFKA_TOPIC='TURNSTILE_SUMMARY',
     VALUE_FORMAT='JSON',
     KEY='station_id') AS
     SELECT station_id, count(*) as 'COUNT'
