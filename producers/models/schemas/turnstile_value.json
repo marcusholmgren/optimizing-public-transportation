@@ -1,7 +1,7 @@
 {
-  "TODO": "Complete this Schema! (Make sure to delete this Key/Value Pair!",
   "type": "record",
-  "name": "mh.nd.turnstile.value",
+  "name": "TurnstileValue",
+  "namespace": "mh.data.streaming.nd",
   "fields": [
     {"name": "station_id", "type": "int"},
     {"name": "station_name", "type": "string"},

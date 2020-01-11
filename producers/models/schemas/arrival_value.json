@@ -1,7 +1,7 @@
 {
-  "TODO": "Complete this Schema! (Make sure to delete this Key/Value Pair!",
   "type": "record",
-  "name": "mh.nd.arrival.value",
+  "name": "ArrivalValue",
+  "namespace": "mh.data.streaming.nd",
   "fields": [
     {"name": "station_id", "type": "int"},
     {"name": "train_id", "type": "int"},
