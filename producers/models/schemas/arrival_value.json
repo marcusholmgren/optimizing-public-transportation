@@ -5,8 +5,8 @@
   "fields": [
     {"name": "station_id", "type": "int"},
     {"name": "train_id", "type": "int"},
-    {"name": "direction", "type": "string"},
-    {"name": "line", "type": "string"},
+    {"name": "direction", "type": "enum", "symbols":  ["E", "W", "S", "N"]},
+    {"name": "line", "type": "enum", "symbols": ["red", "blue", "green"]},
     {"name": "train_status", "type": "string"},
     {"name": "prev_station_id", "type": "int"},
     {"name": "prev_direction", "type": "string"}
