@@ -30,7 +30,7 @@ class Station(Producer):
                 .replace("'", "")
         )
 
-        Producer()
+        # Producer()
         #
         #
         # TODO: Complete the below by deciding on a topic name, number of partitions, and number of
@@ -75,10 +75,10 @@ class Station(Producer):
             key={"timestamp": self.time_millis()},
             value={
                 "station_id": self.station_id,
-                "train_id": train,
+                "train_id": train.train_id,
                 "direction": direction,
                 "line": self.name,
-                "train_status": "I dont know?",
+                "train_status": train.status,
                 "prev_station_id": prev_station_id,
                 "prev_direction": prev_direction
                 #
