@@ -24,8 +24,7 @@ class Producer:
     def __init__(
             self,
             topic_name: str,
-            key_schema: Union[PrimitiveSchema, UnionSchema, FixedSchema, EnumSchema,
-                              RecordSchema, ArraySchema, MapSchema, ErrorUnionSchema],
+            key_schema,
             value_schema=None,
             num_partitions=1,
             num_replicas=1,
