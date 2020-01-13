@@ -2,13 +2,9 @@
 import logging
 import time
 
-from avro.schema import PrimitiveSchema, UnionSchema, FixedSchema, EnumSchema, RecordSchema, ArraySchema, MapSchema, \
-    ErrorUnionSchema
-from confluent_kafka import avro
-from confluent_kafka.admin import AdminClient  #, NewTopic
+from confluent_kafka.admin import AdminClient  # , NewTopic
 from confluent_kafka.avro import AvroProducer
 from confluent_kafka.cimpl import NewTopic
-from fastavro.io.symbols import Union
 
 logger = logging.getLogger(__name__)
 
@@ -105,3 +101,11 @@ class Producer:
     def time_millis(self):
         """Use this function to get the key for Kafka Events"""
         return int(round(time.time() * 1000))
+
+    @staticmethod
+    def sanitize_station_name(name: str) -> str:
+        return name.lower() \
+            .replace("/", "_and_") \
+            .replace(" ", "_") \
+            .replace("-", "_") \
+            .replace("'", "")

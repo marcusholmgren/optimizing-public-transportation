@@ -20,15 +20,9 @@ class Station(Producer):
     #
     value_schema = avro.load(f"{Path(__file__).parents[0]}/schemas/arrival_value.json")
 
-    def __init__(self, station_id, name, color, direction_a=None, direction_b=None):
+    def __init__(self, station_id, name: str, color, direction_a=None, direction_b=None):
         self.name = name
-        station_name = (
-            self.name.lower()
-                .replace("/", "_and_")
-                .replace(" ", "_")
-                .replace("-", "_")
-                .replace("'", "")
-        )
+        station_name = self.sanitize_station_name(self.name)
 
         # Producer()
         #
