@@ -8,7 +8,7 @@ import urllib.parse
 
 import requests
 
-from models.producer import Producer
+from .producer import Producer
 
 logger = logging.getLogger(__name__)
 
@@ -20,8 +20,8 @@ class Weather(Producer):
         "status", "sunny partly_cloudy cloudy windy precipitation", start=0
     )
 
-    #rest_proxy_url = "http://localhost:8082"  # localhost
-    rest_proxy_url = "http://rest-proxy:8082"  # Docker
+    rest_proxy_url = "http://localhost:8082"  # localhost
+    # TODO rest_proxy_url = "http://rest-proxy:8082"  # Docker
 
     key_schema = None
     value_schema = None
