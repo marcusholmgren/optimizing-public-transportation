@@ -56,13 +56,7 @@ class Station(Producer):
         #
         #
 
-        # data = {"value_schema": AVRO_SCHEMA, "records": [{"value": asdict(ClickEvent())}]}
-        # resp = requests.post(
-        #     f"{REST_PROXY_URL}/topics/lesson4.solution6.click_events",  # TODO
-        #     data=json.dumps(data),
-        #     headers=headers,
-
-        logger.info("arrival kafka integration incomplete - skipping")
+        logger.info(str(self))
 
         self.producer.produce(
             topic=self.topic_name,
@@ -71,7 +65,7 @@ class Station(Producer):
                 "station_id": self.station_id,
                 "train_id": train.train_id,
                 "direction": direction,
-                "line": self.name,
+                "line": self.color,
                 "train_status": train.status,
                 "prev_station_id": prev_station_id,
                 "prev_direction": prev_direction

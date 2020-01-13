@@ -81,14 +81,14 @@ class Weather(Producer):
         # specify the Avro schemas and verify that you are using the correct Content-Type header.
         #
         #
-        logger.info("weather kafka proxy integration incomplete - skipping")
+        logger.info("weather kafka proxy integration complete - hoping for the best")
         resp = requests.post(
             #
             #
             # TODO: What URL should be POSTed to?
             #
             #
-            f"{Weather.rest_proxy_url}/topics//TODO",  # TODO what topic name?
+            f"{Weather.rest_proxy_url}/topics/{self.topic_name}",  # TODO what topic name?
             #
             #
             # TODO: What Headers need to bet set?
@@ -97,8 +97,8 @@ class Weather(Producer):
             headers={"Content-Type": "application/vnd.kafka.avro.v2+json"},
             data=json.dumps(
                 {
-                    "key_schema": Weather.key_schema,
-                    "value_schema": Weather.value_schema,
+                    "key_schema": json.dumps(Weather.key_schema),
+                    "value_schema": json.dumps(Weather.value_schema),
                     "records": [{"value": {
                         "temperature": self.temp,
                         "status": self.status

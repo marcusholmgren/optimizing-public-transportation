@@ -47,27 +47,28 @@ class Producer:
         #
         self.broker_properties = {
             "bootstrap.servers": BROKER_URL,
-            "request.required.acks": self.num_replicas  # TODO
-            # TODO
+            "request.required.acks": self.num_replicas,  # TODO
+            "schema.registry.url": "http://localhost:8086"  # TODO
         }
 
         # If the topic does not already exist, try to create it
         if self.topic_name not in Producer.existing_topics:
-            client = AdminClient(self.broker_properties)
-            futures = client.create_topics([
-                NewTopic(topic=self.topic_name,
-                         num_partitions=self.num_partitions,
-                         replication_factor=self.num_replicas)
-            ])
             self.create_topic()
             Producer.existing_topics.add(self.topic_name)
+            # TODO why did it create a client here?
+            # client = AdminClient({"bootstrap.servers": BROKER_URL})
+            # if not self.topic_exists(client):
+            #     futures = client.create_topics([
+            #         NewTopic(topic=self.topic_name,
+            #                  num_partitions=self.num_partitions,
+            #                  replication_factor=self.num_replicas)
+            #     ])
+            #     self.create_topic()
+            #     Producer.existing_topics.add(self.topic_name)
 
         # TODO: Configure the AvroProducer
         self.producer = AvroProducer(
-            {
-                "bootstrap.servers": BROKER_URL,
-                "schema.registry.url": "http://localhost:8086"
-            },
+            self.broker_properties,
             default_key_schema=self.key_schema,
             default_value_schema=self.value_schema
         )
@@ -80,10 +81,34 @@ class Producer:
         # the Kafka Broker.
         #
         #
-        if self.topic_name not in self.existing_topics:
-            self.existing_topics.add(self.topic_name)
-            pass
-        logger.info("topic creation kafka integration incomplete - skipping")
+
+
+        # See: https://docs.confluent.io/current/clients/confluent-kafka-python/#confluent_kafka.admin.NewTopic
+        # See: https://docs.confluent.io/current/installation/configuration/topic-configs.html
+        client = AdminClient({"bootstrap.servers": BROKER_URL})
+        if self.topic_exists(client):
+            logger.info(f"topic {self.topic_name} already exists.")
+            return
+
+        futures = client.create_topics([
+            NewTopic(topic=self.topic_name,
+                     num_partitions=self.num_partitions,
+                     replication_factor=self.num_replicas)
+        ])
+
+        for topic, future in futures.items():
+            try:
+                future.result()
+                logger.info(f"topic {self.topic_name} created.")
+            except Exception as e:
+                logger.error(f"failed to create topic {self.topic_name}: {e}", exc_info=e)
+                raise
+
+    def topic_exists(self, client) -> bool:
+        """Checks if the given topic exists"""
+        # TODO: Check to see if the given topic exists
+        #       See: https://docs.confluent.io/current/clients/confluent-kafka-python/#confluent_kafka.Consumer.list_topics
+        return client.list_topics(topic=self.topic_name, timeout=10.0) is not None
 
     def time_millis(self):
         return int(round(time.time() * 1000))
@@ -96,7 +121,7 @@ class Producer:
         #
         #
         self.producer.flush()
-        logger.info("producer close incomplete - skipping")
+        logger.info("producer close complete - goodbye")
 
     def time_millis(self):
         """Use this function to get the key for Kafka Events"""
