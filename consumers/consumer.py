@@ -92,7 +92,9 @@ class KafkaConsumer:
         # is retrieved.
         #
         #
-        logger.info("_consume is incomplete - skipping")
+        message = self.consumer.poll(timeout=self.consume_timeout)
+
+        logger.info(f"_consume polled message {message}")
         return 0
 
     def close(self):

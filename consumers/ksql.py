@@ -27,22 +27,21 @@ CREATE TABLE turnstile (
     station_name varchar,
     line varchar
 ) WITH (
-    KAFKA_TOPIC='turnstile',
+    KAFKA_TOPIC='mh-turnstile-*',
     VALUE_FORMAT='AVRO',
     KEY='station_id'
 );
 
-CREATE TABLE turnstile_summary
+CREATE TABLE turnstile_summary (
     station_id int,
-    station_count varchar
-WITH (
-    KAFKA_TOPIC='TURNSTILE_SUMMARY',
+    station_count int
+) WITH (
+
     VALUE_FORMAT='JSON',
     KEY='station_id') AS
     SELECT station_id, count(*) as 'COUNT'
     FROM turnstile
     GROUP BY station_id
-
 """
 
 
@@ -64,6 +63,7 @@ def execute_statement():
         ),
     )
 
+    print(f"KSQL response {resp.status_code}")
     # Ensure that a 2XX status code was returned
     resp.raise_for_status()
 
