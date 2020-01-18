@@ -48,7 +48,7 @@ class Producer:
         self.broker_properties = {
             "bootstrap.servers": BROKER_URL,
             "request.required.acks": self.num_replicas,  # TODO
-            "schema.registry.url": "http://localhost:8086"  # TODO
+            "schema.registry.url": "http://localhost:8081"  # TODO
         }
 
         # If the topic does not already exist, try to create it
