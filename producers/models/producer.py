@@ -2,9 +2,9 @@
 import logging
 import time
 
-from confluent_kafka.admin import AdminClient  # , NewTopic
+from confluent_kafka.admin import AdminClient, NewTopic
 from confluent_kafka.avro import AvroProducer
-from confluent_kafka.cimpl import NewTopic
+# from confluent_kafka.cimpl import NewTopic
 
 logger = logging.getLogger(__name__)
 
@@ -110,8 +110,13 @@ class Producer:
         #       See: https://docs.confluent.io/current/clients/confluent-kafka-python/#confluent_kafka.Consumer.list_topics
         return client.list_topics(topic=self.topic_name, timeout=10.0) is not None
 
-    def time_millis(self):
-        return int(round(time.time() * 1000))
+    def delivery_report(self, err, msg):
+        """ Called once for each message produced to indicate delivery result.
+            Triggered by poll() or flush(). """
+        if err is not None:
+            print('Message delivery failed: {}'.format(err))
+        else:
+            print('Message delivered to {} [{}]'.format(msg.topic(), msg.partition()))
 
     def close(self):
         """Prepares the producer for exit by cleaning up the producer"""
@@ -123,7 +128,7 @@ class Producer:
         self.producer.flush()
         logger.info("producer close complete - goodbye")
 
-    def time_millis(self):
+    def time_millis(self) -> int:
         """Use this function to get the key for Kafka Events"""
         return int(round(time.time() * 1000))
 

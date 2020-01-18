@@ -21,7 +21,6 @@ class Weather(Producer):
     )
 
     rest_proxy_url = "http://localhost:8082"  # localhost
-    # TODO rest_proxy_url = "http://rest-proxy:8082"  # Docker
 
     key_schema = None
     value_schema = None
@@ -37,10 +36,10 @@ class Weather(Producer):
         #
         #
         super().__init__(
-            topic_name=f"mh-weather-{month}",  # TODO: Come up with a better topic name
+            topic_name=f"mh_weather_channel",  # TODO: Come up with a better topic name
             key_schema=Weather.key_schema,
             value_schema=Weather.value_schema,
-            num_partitions=1,  # TODO: how many?
+            num_partitions=2,  # TODO: how many?
             num_replicas=1,  # TODO: how many?
         )
 
@@ -95,14 +94,14 @@ class Weather(Producer):
             #
             #
             headers={"Content-Type": "application/vnd.kafka.avro.v2+json"},
-            data=json.dumps(
-                {
+            data=json.dumps({
                     "key_schema": json.dumps(Weather.key_schema),
                     "value_schema": json.dumps(Weather.value_schema),
-                    "records": [{"value": {
-                        "temperature": self.temp,
-                        "status": self.status
-                    }}]
+                    "records": [{"key": {"timestamp": self.time_millis()},
+                                 "value": {
+                                     "temperature": self.temp,
+                                     "status": self.status.name
+                                 }}]
                     #
                     #
                     # TODO: Provide key schema, value schema, and records
@@ -111,7 +110,10 @@ class Weather(Producer):
                 }
             ),
         )
-        resp.raise_for_status()
+        if not resp.ok:
+            print(f"Weather REST proxy response: {resp.status_code}",
+                  json.dumps(json.loads(resp.text), sort_keys=True, indent=4, separators=(",", ": ")))
+            resp.raise_for_status()
 
         logger.debug(
             "sent weather data to kafka, temp: %s, status: %s",

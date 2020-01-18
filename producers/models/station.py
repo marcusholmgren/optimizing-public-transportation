@@ -3,7 +3,9 @@ import logging
 from pathlib import Path
 
 from confluent_kafka import avro
+from confluent_kafka.avro import ClientError
 
+from .train import Train
 from .turnstile import Turnstile
 from .producer import Producer
 
@@ -33,11 +35,11 @@ class Station(Producer):
         #
 
         super().__init__(
-            topic_name=f"mh-station-{station_name}",  # TODO: Come up with a better topic name
+            topic_name=f"mh_station_{station_name}",  # TODO: Come up with a better topic name
             key_schema=Station.key_schema,
             value_schema=Station.value_schema,  # TODO: Uncomment once schema is defined
-            num_partitions=1,  # TODO: how many?
-            num_replicas=1,  # TODO: how many?
+            num_partitions=3,  # TODO: why not three
+            num_replicas=1,  # TODO: low replicas for simulation
         )
 
         self.station_id = int(station_id)
@@ -48,34 +50,40 @@ class Station(Producer):
         self.b_train = None
         self.turnstile = Turnstile(self)
 
-    def run(self, train, direction, prev_station_id, prev_direction):
+    def run(self, train: Train, direction: str, prev_station_id, prev_direction):
         """Simulates train arrivals at this station"""
         #
         #
         # TODO: Complete this function by producing an arrival message to Kafka
         #
         #
-
         logger.info(str(self))
 
-        self.producer.produce(
-            topic=self.topic_name,
-            key={"timestamp": self.time_millis()},
-            value={
-                "station_id": self.station_id,
-                "train_id": train.train_id,
-                "direction": direction,
-                "line": self.color,
-                "train_status": train.status,
-                "prev_station_id": prev_station_id,
-                "prev_direction": prev_direction
-                #
-                #
-                # TODO: Configure this
-                #
-                #
-            },
-        )
+        try:
+            self.producer.produce(
+                topic=self.topic_name,
+                key={"timestamp": self.time_millis()},
+                value={
+                    "station_id": self.station_id,
+                    "train_id": train.train_id,
+                    "direction": direction,
+                    "line": self.color.name,
+                    "train_status": train.status.name,
+                    "prev_station_id": prev_station_id,
+                    "prev_direction": prev_direction
+                    #
+                    #
+                    # TODO: Configure this
+                    #
+                    #
+                },
+                callback=self.delivery_report
+            )
+        except ClientError as err:
+            print(f"Produce topic-name: {self.topic_name}. Error: {err}")
+        except Exception as e:
+            print(f"noo- what is this?  Error: {e}")
+
 
     def __str__(self):
         return "Station | {:^5} | {:<30} | Direction A: | {:^5} | departing to {:<30} | Direction B: | {:^5} | departing to {:<30} | ".format(

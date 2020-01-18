@@ -3,7 +3,7 @@
   "name": "WeatherValue",
   "namespace": "mh.data.streaming.nd",
   "fields": [
-    {"name": "temperature", "type": "double"},
+    {"name": "temperature", "type": "float"},
     {"name": "status", "type": "string"}
   ]
 }
