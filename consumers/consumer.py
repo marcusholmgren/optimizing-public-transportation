@@ -2,8 +2,8 @@
 import logging
 
 import confluent_kafka
-# from confluent_kafka import Consumer
-from confluent_kafka.cimpl import Consumer
+from confluent_kafka import Consumer
+#from confluent_kafka.cimpl import Consumer
 from confluent_kafka.avro import AvroConsumer
 from confluent_kafka.avro.serializer import SerializerError
 from tornado import gen
@@ -38,7 +38,9 @@ class KafkaConsumer:
         #
         #
         self.broker_properties = {
-            "bootstrap.servers": BROKER_URL
+            "bootstrap.servers": BROKER_URL,
+            "group.id": "mh_famous_streaming_group",
+            "default.topic.config": {"auto.offset.reset": "earliest"}
             #
             # TODO
             #
@@ -57,7 +59,7 @@ class KafkaConsumer:
         # how the `on_assign` callback should be invoked.
         #
         #
-        self.consumer.subscribe(self.topic_name_pattern, on_assign=self.on_assign)
+        self.consumer.subscribe([self.topic_name_pattern], on_assign=self.on_assign)
 
     def on_assign(self, consumer, partitions):
         """Callback for when topic assignment takes place"""
@@ -65,7 +67,8 @@ class KafkaConsumer:
         # the beginning or earliest
         logger.info("on_assign is incomplete - skipping")
         for partition in partitions:
-            pass
+            if self.offset_earliest:
+                partition.offset = confluent_kafka.OFFSET_BEGINNING
             #
             #
             # TODO
@@ -92,9 +95,16 @@ class KafkaConsumer:
         # is retrieved.
         #
         #
-        message = self.consumer.poll(timeout=self.consume_timeout)
-
-        logger.info(f"_consume polled message {message}")
+        try:
+            message = self.consumer.poll(timeout=self.consume_timeout)
+            if message:
+                logger.info(f"consumer topic: {message.topic()} polled message: {message.value()}")
+                self.message_handler(message)
+                return 1
+        except SerializerError as se:
+            logger.error("Consumer/consumer failed to serialize message", se)
+        except Exception as e:
+            print(f"Consumer poll error: {e}")
         return 0
 
     def close(self):
