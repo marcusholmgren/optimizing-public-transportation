@@ -7,15 +7,12 @@ import tornado.ioloop
 import tornado.template
 import tornado.web
 
-
 # Import logging before models to ensure configuration is picked up
 logging.config.fileConfig(f"{Path(__file__).parents[0]}/logging.ini")
-
 
 from consumer import KafkaConsumer
 from models import Lines, Weather
 import topic_check
-
 
 logger = logging.getLogger(__name__)
 
@@ -63,18 +60,18 @@ def run_server():
     # Build kafka consumers
     consumers = [
         KafkaConsumer(
-            "org.chicago.cta.weather.v1",
-            weather_model.process_message,
+            topic_name_pattern="^mh_weather_channel",  # "org.chicago.cta.weather.v1",
+            message_handler=weather_model.process_message,
             offset_earliest=True,
         ),
         KafkaConsumer(
-            "org.chicago.cta.stations.table.v1",
+            "mh_station_db_stations",  # "org.chicago.cta.stations.table.v1",
             lines.process_message,
             offset_earliest=True,
             is_avro=False,
         ),
         KafkaConsumer(
-            "^org.chicago.cta.station.arrivals.",
+            "^mh_station_arrival_",  # "^org.chicago.cta.station.arrivals.",
             lines.process_message,
             offset_earliest=True,
         ),

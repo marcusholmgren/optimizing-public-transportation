@@ -22,9 +22,11 @@ class Line:
             self.color_code = "#32CD32"
         self.stations = {}
 
-    def _handle_station(self, value):
+    def _handle_station(self, value: dict):
         """Adds the station to this Line's data model"""
-        if value["line"] != self.color:
+
+        # only handle station line with same color
+        if not value.get(self.color, False):
             return
         self.stations[value["station_id"]] = Station.from_message(value)
 
@@ -56,15 +58,20 @@ class Line:
     def process_message(self, message):
         """Given a kafka message, extract data"""
         # TODO: Based on the message topic, call the appropriate handler.
-        if "org.chicago.cta.stations.table.v1" == message.topic():  # Set the conditional correctly to the stations Faust Table
+        message_topic = message.topic()
+        # if "org.chicago.cta.stations.table.v1" == message_topic:
+        # Set the conditional correctly to the stations Faust Table
+        if "mh_station_db_stations" == message_topic:
             try:
                 value = json.loads(message.value())
                 self._handle_station(value)
             except Exception as e:
                 logger.fatal("bad station? %s, %s", value, e)
-        elif "^org.chicago.cta.station.arrivals." in message.topic():  # Set the conditional to the arrival topic
+        # elif "^org.chicago.cta.station.arrivals." in message.topic():
+        # Set the conditional to the arrival topic
+        elif "mh_station_arrival_" in message_topic:
             self._handle_arrival(message)
-        elif "TURNSTILE_SUMMARY" == message.topic():  # Set the conditional to the KSQL Turnstile Summary Topic
+        elif "TURNSTILE_SUMMARY" == message_topic:  # Set the conditional to the KSQL Turnstile Summary Topic
             json_data = json.loads(message.value())
             station_id = json_data.get("STATION_ID")
             station = self.stations.get(station_id)
@@ -74,5 +81,5 @@ class Line:
             station.process_message(json_data)
         else:
             logger.debug(
-                "unable to find handler for message from topic %s", message.topic()
+                "unable to find handler for message from topic %s", message_topic
             )
